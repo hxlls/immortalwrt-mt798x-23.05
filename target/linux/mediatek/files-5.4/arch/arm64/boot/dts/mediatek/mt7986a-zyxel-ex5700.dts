@@ -1,0 +1,114 @@
+/dts-v1/;
+/include/ "mt7986a.dtsi"
+/include/ "mt7986a-pinctrl.dtsi"
+/include/ <dt-bindings/input/input.h>
+/include/ <dt-bindings/gpio/gpio.h>
+/include/ <dt-bindings/leds/common.h>
+
+/ {
+    model = "Zyxel EX5700";
+    compatible = "zyxel,ex5700", "mediatek,mt7986a";
+
+    chosen {
+        bootargs = "console=ttyS0,115200n1 loglevel=8 earlycon=uart8250,mmio32,0x11002000";
+    };
+
+    aliases {
+        led-boot = &led_status_green;
+        led-failsafe = &led_status_green;
+        led-running = &led_status_green;
+        led-upgrade = &led_status_amber;
+    };
+
+    memory {
+        reg = <0 0x40000000 0 0x40000000>;
+    };
+
+    gsw: gsw@0 {
+        compatible = "mediatek,mt753x";
+        mediatek,ethsys = <&ethsys>;
+        #address-cells = <1>;
+        #size-cells = <0>;
+    };
+
+    gpio-keys {
+        compatible = "gpio-keys";
+        poll-interval = <20>;
+
+        reset-button {
+            label = "reset";
+            gpios = <&pio 9 GPIO_ACTIVE_LOW>;
+            linux,code = <KEY_RESTART>;
+        };
+
+        wps-button {
+            label = "wps";
+            gpios = <&pio 10 GPIO_ACTIVE_LOW>;
+            linux,code = <KEY_WPS_BUTTON>;
+        };
+    };
+
+    leds {
+        compatible = "gpio-leds";
+
+        red1 {
+            label = "red:net";
+            gpios = <&pio 23 GPIO_ACTIVE_HIGH>;
+        };
+
+        green1 {
+            label = "green:net";
+            gpios = <&pio 25 GPIO_ACTIVE_HIGH>;
+        };
+
+        amber1 {
+            label = "amber:net";
+            gpios = <&pio 29 GPIO_ACTIVE_HIGH>;
+        };
+
+        white2 {
+            label = "white:status";
+            gpios = <&pio 16 GPIO_ACTIVE_HIGH>;
+        };
+
+        red2 {
+            label = "red:status";
+            gpios = <&pio 17 GPIO_ACTIVE_HIGH>;
+        };
+
+        led_status_green: green2 {
+            label = "green:status";
+            gpios = <&pio 31 GPIO_ACTIVE_HIGH>;
+        };
+
+        led_status_amber: amber2 {
+            label = "amber:status";
+            gpios = <&pio 18 GPIO_ACTIVE_HIGH>;
+        };
+    };
+
+    nmbm_spim_nand {
+        compatible = "generic,nmbm";
+        #address-cells = <1>;
+        #size-cells = <1>;
+
+        lower-mtd-device = <&spi_nand>;
+        forced-create;
+
+        partitions {
+            compatible = "fixed-partitions";
+            #address-cells = <1>;
+            #size-cells = <1>;
+
+            partition@0 {
+                label = "BL2";
+                reg = <0x00 0x100000>;
+            };
+
+            partition@100000 {
+                label = "u-boot-env";
+                reg = <0x100000 0x80000>;
+            };
+        };
+    };
+};
